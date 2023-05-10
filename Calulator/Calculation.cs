@@ -113,7 +113,7 @@ namespace Calulator
         {
             double result = 0;
             double num = double.Parse(NumberInSix);
-            int firstPart = Math.Abs((int)num);
+            int firstPart = (int)Math.Abs(num);
             double secondPart = Math.Round(Math.Abs(num) - firstPart,5);
             bool sign = num < 0? true : false;
             int PositivePow = 0;
@@ -140,6 +140,10 @@ namespace Calulator
 
         static private double TransposeFromTenToSixSystem(double NumberInTen)
         {
+            if(NumberInTen == double.NegativeInfinity || NumberInTen == double.PositiveInfinity)
+            {
+                return NumberInTen;
+            }
             double result = 0;
             int pow = 0;
             bool sign = NumberInTen < 0 ? true : false;

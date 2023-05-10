@@ -20,6 +20,7 @@ namespace Calulator
         {
             Button button = ((Button)sender);
             textBox1.Text = textBox1.Text == "0" ? button.Text : textBox1.Text + button.Text;
+            isLastClickedIsOperator = false;
         }
 
         private void button15_Click(object sender, EventArgs e)
@@ -34,7 +35,11 @@ namespace Calulator
             {
                 textBox1.Text = "0";
             }
-            textBox1.Text += button.Text;
+            if (!isLastClickedIsOperator)
+            {
+                textBox1.Text += button.Text;
+                isLastClickedIsOperator = true;
+            }
         }
 
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
@@ -89,7 +94,7 @@ namespace Calulator
         {
             if (textBox1.Text == "") { textBox1.Text = "0"; }
             if (textBox1.Text[0] == ',' || textBox1.Text[0] == '-') { textBox1.Text = "0" + textBox1.Text; }
-            textBox1.Text = Math.Round(Calculation.Calculate(textBox1.Text),5).ToString();
+            textBox1.Text = Math.Round(Calculation.Calculate(textBox1.Text), 5).ToString();
         }
 
         private void button11_Click(object sender, EventArgs e)
@@ -100,6 +105,22 @@ namespace Calulator
                 neededToCloseBrackets--;
             }
             Calculate();
+        }
+
+        private void button13_Click(object sender, EventArgs e)
+        {
+            Button button = (Button)sender;
+            this.textBox1.Text += button.Text;
+            neededToCloseBrackets++;
+        }
+
+        private void button14_Click(object sender, EventArgs e)
+        {
+            if (neededToCloseBrackets > 0)
+            {
+                textBox1.Text += ")";
+                neededToCloseBrackets--;
+            }
         }
     }
 }
