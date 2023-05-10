@@ -5,7 +5,8 @@ namespace Calulator
     public partial class Form1 : Form
     {
         private int neededToCloseBrackets = 0;
-        private bool isLastClickedIsOperator = false;
+        HashSet<char> Numbers = new HashSet<char>() { '0', '1', '2', '3', '4', '5', '(', ')', '\b' };
+        HashSet<char> Others = new HashSet<char>() { ',', '+', '-', '/', '=', '*' };
         public Form1()
         {
             InitializeComponent();
@@ -20,7 +21,6 @@ namespace Calulator
         {
             Button button = ((Button)sender);
             textBox1.Text = textBox1.Text == "0" ? button.Text : textBox1.Text + button.Text;
-            isLastClickedIsOperator = false;
         }
 
         private void button15_Click(object sender, EventArgs e)
@@ -35,18 +35,15 @@ namespace Calulator
             {
                 textBox1.Text = "0";
             }
-            if (!isLastClickedIsOperator)
+            if (Others.Contains(button.Text[0]) && !Others.Contains(textBox1.Text[^1]))
             {
                 textBox1.Text += button.Text;
-                isLastClickedIsOperator = true;
             }
         }
 
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             char numberOrOperationOrBracket = e.KeyChar;
-            HashSet<char> Numbers = new HashSet<char>() { '0', '1', '2', '3', '4', '5', '(', ')', '\b' };
-            HashSet<char> Others = new HashSet<char>() { ',', '+', '-', '/', '=', '*' };
             if (!Numbers.Contains(e.KeyChar) && !Others.Contains(e.KeyChar))
             {
                 e.Handled = true;
@@ -71,21 +68,16 @@ namespace Calulator
                 else if (e.KeyChar == ')' && neededToCloseBrackets > 0)
                 {
                     neededToCloseBrackets--;
-                    e.Handled = true;
+                    e.Handled = false;
                 }
-                else if (Others.Contains(e.KeyChar) && isLastClickedIsOperator)
-                {
-                    e.Handled = true;
-                }
-                else if (Others.Contains(e.KeyChar))
+                else if ((Others.Contains(e.KeyChar) && !Others.Contains(textBox1.Text[^1])) ||
+                    (e.KeyChar != ')' && Numbers.Contains(e.KeyChar)))
                 {
                     e.Handled = false;
-                    isLastClickedIsOperator = true;
                 }
-                else if (Numbers.Contains(e.KeyChar))
+                else
                 {
-                    e.Handled = false;
-                    isLastClickedIsOperator = false;
+                    e.Handled = true;
                 }
             }
         }
