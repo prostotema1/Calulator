@@ -31,11 +31,16 @@ namespace Calulator
         private void button10_Click(object sender, EventArgs e)
         {
             Button button = (Button)sender;
-            if (textBox1.Text == "")
+            if (textBox1.Text.Length == 0 || !Numbers.Contains(textBox1.Text[^1]) && button.Text == "," && textBox1.Text[^1] != ',')
             {
-                textBox1.Text = "0";
+                textBox1.Text += "0,";
             }
-            if (Others.Contains(button.Text[0]) && !Others.Contains(textBox1.Text[^1]))
+            else if (Others.Contains(button.Text[0]) && Others.Contains(textBox1.Text[^1]))
+            {
+                textBox1.Text = textBox1.Text.Remove(textBox1.Text.Length - 1);
+                textBox1.Text += button.Text;
+            }
+            else
             {
                 textBox1.Text += button.Text;
             }
@@ -52,12 +57,29 @@ namespace Calulator
             {
                 if (e.KeyChar == '=')
                 {
-                    while (neededToCloseBrackets > 0)
+                    if (neededToCloseBrackets > 0)
                     {
-                        textBox1.Text += ')';
-                        neededToCloseBrackets--;
+                        textBox1.Text = "Ошибка ввода!";
+                        neededToCloseBrackets = 0;
+                        e.Handled = true;
+                        return;
                     }
                     Calculate();
+                    e.Handled = true;
+                }
+                else if (e.KeyChar == ',')
+                {
+                    if (textBox1.Text.Length ==0 || !Numbers.Contains(textBox1.Text[^1]) && 
+                        (textBox1.Text[^1] != ')' && textBox1.Text[^1] != '('))
+                    {
+                        textBox1.Text += "0,";
+                    }
+                    else if(Numbers.Contains(textBox1.Text[^1]) &&
+                        (textBox1.Text[^1] != ')' && textBox1.Text[^1] != '('))
+                    {
+                        e.Handled = false;
+                        return;
+                    }
                     e.Handled = true;
                 }
                 else if (e.KeyChar == '(')
@@ -70,7 +92,7 @@ namespace Calulator
                     neededToCloseBrackets--;
                     e.Handled = false;
                 }
-                else if ((Others.Contains(e.KeyChar) && !Others.Contains(textBox1.Text[^1])) ||
+                else if (textBox1.Text.Length != 0 && (Others.Contains(e.KeyChar) && !Others.Contains(textBox1.Text[^1])) ||
                     (e.KeyChar != ')' && Numbers.Contains(e.KeyChar)))
                 {
                     e.Handled = false;
@@ -82,19 +104,13 @@ namespace Calulator
             }
         }
 
-        private void Calculate()
-        {
-            if (textBox1.Text == "") { textBox1.Text = "0"; }
-            if (textBox1.Text[0] == ',' || textBox1.Text[0] == '-') { textBox1.Text = "0" + textBox1.Text; }
-            textBox1.Text = Math.Round(Calculation.Calculate(textBox1.Text), 5).ToString();
-        }
-
         private void button11_Click(object sender, EventArgs e)
         {
-            while (neededToCloseBrackets > 0)
+            if (neededToCloseBrackets > 0)
             {
-                textBox1.Text += ")";
-                neededToCloseBrackets--;
+                textBox1.Text = "Ошибка ввода!";
+                neededToCloseBrackets = 0;
+                return;
             }
             Calculate();
         }
@@ -114,5 +130,69 @@ namespace Calulator
                 neededToCloseBrackets--;
             }
         }
+
+        private void button16_Click(object sender, EventArgs e)
+        {
+            textBox1.Text = textBox1.Text.Remove(textBox1.Text.Length - 1);
+        }
+
+        private void Calculate()
+        {
+            try
+            {
+                checkInput();
+                if (textBox1.Text == "") { textBox1.Text = "0"; return; }
+                if (textBox1.Text[0] == '-') { textBox1.Text = "0" + textBox1.Text; }
+                textBox1.Text = Math.Round(Calculation.Calculate(textBox1.Text), 5).ToString();
+            }
+            catch(Exception e)
+            {
+                if (e.Message.Equals("Stack empty."))
+                {
+                    textBox1.Text = "Ошибка ввода!";
+                }
+                else if (e.Message.Equals("Negating the minimum value of a twos complement number is invalid."))
+                {
+                    textBox1.Text = "Деление на ноль невозможно.";
+                }
+                else { textBox1.Text = e.Message; }
+            }
+        }
+
+        private bool checkInput()
+        {
+            if(neededToCloseBrackets > 0)
+            {
+                throw new Exception("Ошибка ввода! Неправильное количество скобок.");
+            }
+
+            bool hasComma = false;
+            for(int i =0; i < textBox1.Text.Length; i++)
+            {
+                var c = textBox1.Text[i];
+                if(!Numbers.Contains(c) && !Others.Contains(c))
+                {
+                    throw new Exception("Неправильный ввод!");
+                }
+                if(c == ',' && hasComma)
+                {
+                    throw new Exception("Неправильный ввод! Проверьте запятые.");
+                }
+                if(c == ',')
+                {
+                    hasComma = true;
+                }
+                if(Others.Contains(c) && c != ',')
+                {
+                    hasComma = false;
+                }
+
+
+            }
+
+
+            return true;
+        }
+
     }
 }

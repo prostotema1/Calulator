@@ -8,12 +8,6 @@ namespace Calulator
 {
     internal class Calculation
     {
-        private String initialExpression;
-        Calculation(String expression)
-        {
-            this.initialExpression = expression;
-        }
-
         static private bool IsDelimeter(char c)
         {
             if ((" =".IndexOf(c) != -1))
@@ -117,7 +111,7 @@ namespace Calulator
             double secondPart = Math.Round(Math.Abs(num) - firstPart,5);
             bool sign = num < 0? true : false;
             int PositivePow = 0;
-            int NegativePow = -1;
+            int NegativePow = -5;
             while(firstPart > 0)
             {
                 result += (firstPart % 10) * Math.Pow(6, PositivePow++);
@@ -125,25 +119,23 @@ namespace Calulator
             }
             if (secondPart != 0)
             {
+                secondPart *= Math.Pow(10, 5);
+                secondPart = Math.Round(secondPart);
                 for(int i =0; i< 5; i++)
                 {
-                    secondPart *= 10;
-                    int n = (int)secondPart;
-                    double temp = Math.Round(n * Math.Pow(6, NegativePow),5);
-                    result += Math.Round(temp * Math.Pow(10, NegativePow--),5);
-                    secondPart = secondPart - n;
+                    int n = (int)secondPart % 10;
+                    double temp = Math.Round(n * Math.Pow(6, NegativePow++),5);
+                    result += temp;
+                    secondPart = (int)(secondPart / 10);
                 }
             }
+            result = Math.Round(result, 5);
             if (sign) { result *= -1; }
             return result;
         }
 
         static private double TransposeFromTenToSixSystem(double NumberInTen)
         {
-            if(NumberInTen == double.NegativeInfinity || NumberInTen == double.PositiveInfinity)
-            {
-                return NumberInTen;
-            }
             double result = 0;
             int pow = 0;
             bool sign = NumberInTen < 0 ? true : false;
@@ -156,21 +148,15 @@ namespace Calulator
             }
             if (LastPart != 0)
             {
-                int negativePow = -1;
-                while (negativePow >-6)
+                String s = "0,";
+                for(int i =0; i < 5;i++)
                 {
                     LastPart *= 6;
-                    double multiplier = Math.Pow(10, negativePow--);
-                    if(LastPart >= 1)
-                    {
-                        result += Math.Round(((int)LastPart) * multiplier,5);
-                        LastPart = LastPart - ((int)LastPart);
-                    }
-                    else
-                    {
-                        result += Math.Round(((int)LastPart * 10) * multiplier,5);
-                    }
+                    int temp = (int)LastPart;
+                    s += temp;
+                    LastPart -= temp;
                 }
+                result += Math.Round(double.Parse(s),5);
             }
             if (sign) { result *= -1; }
             return result;
@@ -201,15 +187,7 @@ namespace Calulator
                 {
                    
                     double a = temp.Pop();
-                    double b;
-                    try
-                    {
-                        b = temp.Pop();
-                    }
-                    catch(Exception e)
-                    {
-                        b = 0;
-                    }
+                    double b = temp.Pop();
 
                     switch (input[i])
                     {
@@ -221,7 +199,8 @@ namespace Calulator
                     temp.Push(result); 
                 }
             }
-            return TransposeFromTenToSixSystem(temp.Peek());
+            var res = TransposeFromTenToSixSystem(temp.Peek());
+            return res;
         }
 
     }
